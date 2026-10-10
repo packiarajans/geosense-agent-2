@@ -123,10 +123,16 @@ def test_lidar_profile_manhattan_box():
     assert not r.json().get('error')
 
 
-def test_classify_imagery_is_reported_unavailable():
-    j = post('/tools/classify_imagery', CHENNAI).json()
-    assert j.get('error'), 'classify_imagery is a stub until GeoVision is wired in'
+def test_classify_imagery_velachery_returns_land_cover():
+    j = post('/tools/classify_imagery', {'latitude': 12.98, 'longitude': 80.22}, timeout=120).json()
+    assert not j.get('error'), j
+    assert j['dominant_class'] in ('tree', 'shrub', 'grass', 'crop', 'built', 'bare', 'water', 'wetland')
+    assert 0 <= j['confidence'] <= 1 and abs(sum(j['class_share_percent'].values()) - 100) < 1
 
+
+def test_classify_imagery_outside_velachery_is_honest():
+    j = post('/tools/classify_imagery', MANHATTAN).json()
+    assert j.get('error'), 'imagery exists only for the Velachery tile; elsewhere it must say so'
 
 def test_streetview_outside_mapillary_coverage_does_not_crash():
     # mid-ocean point: fast, and must return a structured error rather than an HTTP 500
