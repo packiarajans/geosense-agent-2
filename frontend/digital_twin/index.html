@@ -35,6 +35,10 @@
         <option value="rel">NYC flood: relative terciles</option>
       </select>
       <label><input type="checkbox" id="chkBuildings" checked /> LiDAR buildings (3D)</label>
+      <div style="margin-top:8px"><b>Satellite imagery year</b> <span id="yearLabel" style="color:#9fb">Current</span>
+        <input type="range" id="yearSlider" min="0" max="4" step="1" value="4" style="width:100%">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#bbb"><span>2015</span><span>2018</span><span>2021</span><span>2024</span><span>Now</span></div>
+        <div style="font-size:10px;color:#888">Esri World Imagery Wayback (archive snapshots)</div></div>
       <div id="legend">
         <div><span style="background:#d62728"></span>High risk</div>
         <div><span style="background:#ff9f1c"></span>Medium risk</div>

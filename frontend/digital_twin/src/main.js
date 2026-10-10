@@ -97,8 +97,33 @@ $('floodMode').addEventListener('change', () => { if ($('site').value !== 'chenn
 $('chkFlood').addEventListener('change', () => { if (floodDS) floodDS.show = $('chkFlood').checked })
 $('chkBuildings').addEventListener('change', () => { if (bldDS) bldDS.show = $('chkBuildings').checked && $('site').value === 'manhattan' })
 
-goToSite('chennai').catch((e) => { console.error(e); status('Error: ' + e.message) })
+const qs = new URLSearchParams(location.search)   // optional: ?site=manhattan&year=1  (used for README screenshots)
+if (SITES[qs.get('site')]) site.value = qs.get('site')
+if (qs.get('year') != null) { yearSlider.value = qs.get('year'); setYear(Number(qs.get('year'))) }
+goToSite(site.value).catch((e) => { console.error(e); status('Error: ' + e.message) })
 
+// ---- Historical imagery time slider (Esri World Imagery Wayback snapshots; free, no key) ----
+const WAYBACK = [
+  { label: '2015 (Jan)', id: 20222 },
+  { label: '2018 (Jan)', id: 13161 },
+  { label: '2021 (Jan)', id: 1049 },
+  { label: '2024 (Jan)', id: 41468 },
+  { label: 'Current (Sep 2026)', id: null },
+]
+let histLayer = null
+function setYear(i) {
+  const w = WAYBACK[i]
+  $('yearLabel').textContent = w.label
+  if (histLayer) { viewer.imageryLayers.remove(histLayer, true); histLayer = null }
+  if (w.id == null) return
+  const provider = new Cesium.UrlTemplateImageryProvider({
+    url: `https://wayback.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default028mm/MapServer/tile/${w.id}/{z}/{y}/{x}`,
+    maximumLevel: 19,
+    credit: 'Esri World Imagery Wayback',
+  })
+  histLayer = viewer.imageryLayers.addImageryProvider(provider)   // drawn on top of the base imagery
+}
+$('yearSlider').addEventListener('input', (e) => setYear(Number(e.target.value)))
 // ---- Street view (Mapillary) -------------------------------------------------
 const MLY_TOKEN = import.meta.env.VITE_MAPILLARY_TOKEN
 let mly = null
