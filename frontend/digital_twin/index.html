@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeoSense 3D Digital Twin</title>
+    <style>
+      html, body, #cesiumContainer { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; font-family: system-ui, sans-serif; }
+      #panel { position: absolute; top: 10px; left: 10px; z-index: 10; background: rgba(20,24,32,.88); color: #eee;
+               padding: 12px 14px; border-radius: 8px; font-size: 13px; min-width: 230px; }
+      #panel h3 { margin: 0 0 8px; font-size: 15px; }
+      #panel label { display: block; margin: 4px 0; }
+      #panel select, #panel button { width: 100%; margin: 4px 0; padding: 4px; }
+      #legend span { display:inline-block; width:12px; height:12px; margin-right:6px; vertical-align:middle; }
+      #status { margin-top: 8px; font-size: 12px; color: #9fb; }
+      #sv { position: absolute; right: 10px; bottom: 10px; z-index: 10; width: 440px; height: 300px; background: #111; border-radius: 8px;
+            overflow: hidden; display: none; box-shadow: 0 2px 12px rgba(0,0,0,.5); }
+      #sv .bar { position: absolute; top: 0; left: 0; right: 0; z-index: 20; background: rgba(20,24,32,.85); color: #eee; font-size: 12px; padding: 4px 8px; display: flex; justify-content: space-between; }
+      #sv .bar button { background: none; border: 0; color: #eee; cursor: pointer; font-size: 14px; }
+      #svView { position: absolute; inset: 0; }
+      #svMsg { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; color: #ccc; font-size: 13px; text-align: center; padding: 20px; }    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <div id="panel">
+      <h3>GeoSense Digital Twin</h3>
+      <select id="site">
+        <option value="chennai">Chennai (flood zones)</option>
+        <option value="manhattan">Manhattan UES (LiDAR + flood)</option>
+        <option value="fidi">New York FiDi (flood)</option>
+      </select>
+      <label><input type="checkbox" id="chkFlood" checked /> Flood risk layer</label>
+      <select id="floodMode">
+        <option value="abs">NYC flood: absolute elevation bands</option>
+        <option value="rel">NYC flood: relative terciles</option>
+      </select>
+      <label><input type="checkbox" id="chkBuildings" checked /> LiDAR buildings (3D)</label>
+      <div id="legend">
+        <div><span style="background:#d62728"></span>High risk</div>
+        <div><span style="background:#ff9f1c"></span>Medium risk</div>
+        <div><span style="background:#2ca02c"></span>Low risk</div>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:#bbb">Click the globe to open street view there.</div><div id="status">Loading…</div>
+    </div>
+    <div id="sv">
+      <div class="bar"><span id="svTitle">Street view</span><button id="svClose" title="Close">&#x2715;</button></div>
+      <div id="svView"></div>
+      <div id="svMsg"></div>
+    </div>    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
