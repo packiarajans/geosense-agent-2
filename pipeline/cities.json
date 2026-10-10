@@ -1,0 +1,12 @@
+{
+  "mumbai": {
+    "bbox": [
+      72.77,
+      18.89,
+      72.99,
+      19.27
+    ],
+    "dem_path": "F:/Cities/mumbai/dem/mumbai_city_dem.tif",
+    "osm_dir": "F:/WesternZone_OSM"
+  }
+}

@@ -1,0 +1,32 @@
+.env
+__pycache__/
+*.pyc
+node_modules/
+frontend/digital_twin/dist/
+frontend/npm_setup.log
+backup/
+outputs/agent_logs/
+
+
+# --- big data / models / generated outputs (not for GitHub) ---
+data/
+models/
+outputs/
+Claude outputs/
+Delhi_DEM_Work/
+Mumbai_DEM_Work/
+Mumbai_DEM.tif
+OpenPCDet/
+*.tif
+*.laz
+*.las
+.pytest_cache/
+.ipynb_checkpoints/
+
+# --- Phase 4 additions ---
+frontend/digital_twin/node_modules/
+frontend/digital_twin/dist/
+frontend/digital_twin/.env
+frontend/digital_twin/*.log
+frontend/digital_twin/public/flood_risk.geojson
+docs/*.docx
