@@ -1,0 +1,367 @@
+{
+  "variable": [
+    {
+      "value": "http://localhost:8000",
+      "key": "base_url"
+    }
+  ],
+  "item": [
+    {
+      "request": {
+        "url": {
+          "path": [
+            "health"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/health"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ]
+      },
+      "name": "00 Health"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "score_location"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/score_location"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
+        }
+      },
+      "name": "01 score_location (Chennai)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "classify_imagery"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/classify_imagery"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
+        }
+      },
+      "name": "02 classify_imagery (placeholder)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "lidar_profile"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/lidar_profile"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"min_lat\": 40.775, \"min_lon\": -73.960, \"max_lat\": 40.780, \"max_lon\": -73.953}"
+        }
+      },
+      "name": "03 lidar_profile (Manhattan UES box)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "streetview_scene"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/streetview_scene"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 40.7778, \"longitude\": -73.9565}"
+        }
+      },
+      "name": "04 streetview_scene (slow on first call)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "get_climate_risk"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/get_climate_risk"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 40.7033, \"longitude\": -74.017}"
+        }
+      },
+      "name": "05 get_climate_risk (Manhattan)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "get_climate_risk"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/get_climate_risk"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
+        }
+      },
+      "name": "05b get_climate_risk (Chennai)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "get_demographics"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/get_demographics"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
+        }
+      },
+      "name": "06 get_demographics (nearest hospital)"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "find_similar_sites"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/find_similar_sites"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707, \"top_k\": 5}"
+        }
+      },
+      "name": "07 find_similar_sites"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "tools",
+            "get_climate_risk"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/tools/get_climate_risk"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 51.5074, \"longitude\": -0.1278}"
+        }
+      },
+      "name": "08 outside coverage (London) - expect error"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "agent",
+            "latest_result"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/agent/latest_result"
+        },
+        "method": "POST",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ],
+        "body": {
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          },
+          "mode": "raw",
+          "raw": "{\"latitude\": 40.7778, \"longitude\": -73.9565}"
+        }
+      },
+      "name": "09 move the twin camera"
+    },
+    {
+      "request": {
+        "url": {
+          "path": [
+            "agent",
+            "latest_result"
+          ],
+          "host": [
+            "{{base_url}}"
+          ],
+          "raw": "{{base_url}}/agent/latest_result"
+        },
+        "method": "GET",
+        "header": [
+          {
+            "value": "application/json",
+            "key": "Content-Type"
+          }
+        ]
+      },
+      "name": "10 read latest agent location"
+    }
+  ],
+  "info": {
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "name": "GeoSense Agent 2.0 - Phase 4 MCP server"
+  }
+}
