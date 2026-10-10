@@ -31,7 +31,7 @@ Flood layers are **elevation-based estimates** (relative terciles or absolute el
 | Tool | What it returns |
 |------|-----------------|
 | `score_location` | Site-suitability score for a point (Chennai) |
-| `classify_imagery` | Land-use class from imagery - **currently an "unavailable" stub** (GeoVision model not wired in) |
+| `classify_imagery` | Land-cover mix (tree, built, water ...) and NDVI from the Phase 2 U-Net on Sentinel-2 - **Velachery, Chennai tile only**; set `GEOVISION_DATA_DIR` if the model files move |
 | `lidar_profile` | Building heights / footprints around a point (Manhattan LiDAR) |
 | `streetview_scene` | Road / building / vegetation shares and a walkability score from Mapillary photos |
 | `get_climate_risk` | Elevation and flood-zone class at a point (temperature / drought not available) |
@@ -111,8 +111,8 @@ CLI alternative to Streamlit: `run_agent.bat "Is the area at 13.0827, 80.2707 fl
 
 - Server, 7 tools (6 working + 1 stub), twin, flood/LiDAR layers, camera fly-to and street view are built and were tested individually.
 - The agent graph was verified with a stubbed model. A real-model run needs Anthropic API credit; the Streamlit end-to-end check is pending that.
-- `classify_imagery` is not connected to the GeoVision model yet.
-- The historical imagery year slider (2015 / 2018 / 2021 / 2024) is not built.
+- `classify_imagery` covers only the Velachery Sentinel-2 tile the Phase 2 model was trained on (needs `segmentation-models-pytorch` and `timm`).
+- The year slider uses Esri World Imagery "Wayback" snapshots (2015, 2018, 2021, 2024, current); it needs internet access and the archive images are Esri's, shown for demonstration.
 - Chennai has flood zones but no LiDAR buildings; street-view coverage in Chennai may be patchy (Mapillary is crowd-sourced).
 - First `streetview_scene` call is slow (downloads photos and the segmentation model); later calls are faster.
 - The TLS-inspecting network needs `truststore` (already injected in `mcp_server.py`) for Python HTTPS calls.
