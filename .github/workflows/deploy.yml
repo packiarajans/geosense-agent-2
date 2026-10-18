@@ -19,11 +19,11 @@ jobs:
         with:
           python-version: '3.11'
       # The existing tests in tests/ call a RUNNING server and local data, so CI does not run them.
-      # Until you add data-free unit tests, CI proves the code compiles and both images build.
+      # Until you add data-free unit tests, CI proves the code compiles and the frontend image builds.
       - name: Byte-compile sources and tests
         run: python -m compileall -q src tests
-      - name: Build backend image (no push)
-        run: docker build -f deploy/Dockerfile.backend -t geosense-backend:ci .
+      # The backend image bakes in LiDAR/U-Net/label data from data/ (not in git), so it is
+      # built locally / with Cloud Build, not in CI.
       - name: Build frontend image (no push)
         run: docker build -f deploy/Dockerfile.frontend -t geosense-frontend:ci .
 
@@ -42,15 +42,14 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
-      - name: Build and push backend image
+      - name: Build and push frontend image
         run: |
           gcloud auth configure-docker asia-south1-docker.pkg.dev
-          IMAGE=asia-south1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/geosense-repo/geosense-backend:${{ github.sha }}
-          docker build -f deploy/Dockerfile.backend -t "$IMAGE" .
+          IMAGE=asia-south1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/geosense-repo/geosense-frontend:${{ github.sha }}
+          docker build -f deploy/Dockerfile.frontend -t "$IMAGE" .
           docker push "$IMAGE"
       - uses: google-github-actions/deploy-cloudrun@v2
         with:
-          service: geosense-backend
+          service: geosense-frontend
           region: asia-southeast1
-          image: asia-south1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/geosense-repo/geosense-backend:${{ github.sha }}
-
+          image: asia-south1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/geosense-repo/geosense-frontend:${{ github.sha }}
