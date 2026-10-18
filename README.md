@@ -5,6 +5,20 @@ such as *"Is the area at 13.0827, 80.2707 in Chennai prone to flooding?"*
 
 Built by Packiarajan Siva (M.Tech Geoinformatics, University of Madras) as a portfolio project.
 
+## Live demo
+
+| | |
+|---|---|
+| Agent demo | https://geosense-frontend-179821184586.asia-southeast1.run.app |
+| 3D digital twin | https://geosense-twin-179821184586.asia-southeast1.run.app |
+| API docs (7 tools) | https://geosense-backend-179821184586.asia-southeast1.run.app/docs |
+| All links | [`docs/index.html`](docs/index.html) |
+
+Runs on Google Cloud Run (scale to zero), so the first request after a quiet period can take 10 to 30 seconds.
+Try: *"Is the area at 13.0827, 80.2707 in Chennai prone to flooding?"*
+
+![Cloud architecture](docs/portfolio/geosense_architecture_with_icons.png)
+
 ## Phases
 
 | Phase | Folder | What it does |
@@ -12,11 +26,12 @@ Built by Packiarajan Siva (M.Tech Geoinformatics, University of Madras) as a por
 | 1 | `src/phase1_ml` | Machine-learning site scoring for Chennai (features from roads, hospitals, flood risk; SHAP explanations) |
 | 2 | trained U-Net kept outside this repository | Land-use semantic segmentation on Sentinel-2 imagery; used by the `classify_imagery` tool |
 | 3 | `src/phase3_lidar` | LiDAR processing and street-view scene analysis (Mapillary + SegFormer) |
-| **4** | `src/phase4_agent`, `frontend/digital_twin` | **MCP server, GeoAI agent, 3D Digital Twin and Streamlit demo** (below) |
+| 4 | `src/phase4_agent`, `frontend/digital_twin` | MCP server, GeoAI agent, 3D Digital Twin and Streamlit demo (below) |
+| **5** | `deploy/`, `.github/workflows` | **Docker images, Google Cloud Run deployment, CI workflow** (below) |
 
 ## Phase 4 - MCP Server, GeoAI Agent and 3D Digital Twin
 
-Phase 4 wraps the analysis modules as seven tools behind one server, lets a Claude-powered LangGraph agent choose and call them,
+Phase 4 wraps the analysis modules as seven tools behind one server, lets a LangGraph agent (Gemini by default, Claude switchable) choose and call them,
 and shows the results on a CesiumJS 3D globe.
 
 ```
@@ -42,7 +57,7 @@ CesiumJS twin (5173) <------------- flies the camera and opens street view -----
 ### Quick start (Windows)
 
 1. Create the conda environment (`environment_geosense2.yml`) and a PostGIS database with the project layers.
-2. Copy your keys into `.env` (see `src/phase4_agent/README.md`): `ANTHROPIC_API_KEY`, `MAPILLARY_TOKEN`, database settings.
+2. Copy your keys into `.env` (see `src/phase4_agent/README.md`): `GEMINI_API_KEY` (or `ANTHROPIC_API_KEY` with `AGENT_PROVIDER=anthropic`), `MAPILLARY_TOKEN`, database settings.
 3. In `frontend/digital_twin/.env` set `VITE_CESIUM_ION_TOKEN` and `VITE_MAPILLARY_TOKEN`, then `npm install` once.
 4. Double-click `start_all.bat` and open http://localhost:8501.
 
@@ -63,9 +78,29 @@ python -m pytest tests/test_phase4_agent.py -v -m "not agent" # skip the 4 tests
 
 ### Tech
 
-Python, FastAPI, Model Context Protocol (`mcp`), LangGraph, LangChain Anthropic (Claude), Streamlit, PostGIS, GeoPandas, LiDAR (LAZ) processing,
+Python, FastAPI, Model Context Protocol (`mcp`), LangGraph, Gemini / Claude via LangChain, Streamlit, PostGIS, GeoPandas, LiDAR (LAZ) processing,
 SegFormer (Hugging Face), CesiumJS, Vite, Mapillary.
 
 ### Data
 
 NOAA 2017 NYC topobathy DEM, NYC LiDAR (Manhattan tiles), Chennai DEM, an OpenStreetMap extract, Mapillary street-level imagery, Cesium Ion world terrain.
+
+## Phase 5 - Docker, Google Cloud Run and CI
+
+Phases 1 to 4 are packaged as three containers and deployed to Google Cloud Run (Singapore) on a free trial, with a free Neon PostGIS database.
+
+| Service | Image | Cloud Run settings |
+|---|---|---|
+| Frontend (Streamlit + LangGraph agent) | `deploy/Dockerfile.frontend` | 1 GiB, 1 CPU, scale to zero |
+| 3D digital twin (Vite + CesiumJS, nginx) | `deploy/Dockerfile.twin` | 512 MiB, scale to zero |
+| Backend (FastAPI + MCP, 7 tools) | `deploy/Dockerfile.backend` | 4 GiB, 2 CPU, scale to zero |
+
+- **Data baked into the backend image** (LiDAR tiles, U-Net, SegFormer weights, site model), so no storage bucket is needed.
+- **Secrets** (Gemini key, database password, Mapillary token) live in Secret Manager; see [`docs/portfolio/secrets_checklist.md`](docs/portfolio/secrets_checklist.md). No keys are committed.
+- **Run locally with Docker:** `cd deploy` then `.\start.ps1` (stop with `.\stop.ps1`).
+- **CI:** `.github/workflows/deploy.yml` compiles the code and builds the frontend image on every push. A deploy job (off by default) signs in to Google Cloud keylessly with Workload Identity Federation. The backend image needs local data, so it is built locally or with Cloud Build.
+- **Tests on the live site:** all 7 tools pass; load test against the public backend: 20 requests, 0 errors, average 0.31 s, p95 0.35 s (`tests/test_load.py`).
+- **Known limits:** cold starts, land-cover classification covers Velachery only, flood classes are DEM-based estimates, free-tier LLM rate limits.
+
+![Phases 1 to 4](docs/portfolio/geosense_architecture_phases1-4_with_icons.png)
+

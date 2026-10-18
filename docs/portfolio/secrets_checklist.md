@@ -1,15 +1,24 @@
 # Cloud secrets checklist (names only -- never commit values)
 
-Confirm each variable name against your local `.env` before deploying.
-
-| Variable | Service | Used for | Where it comes from |
+| Variable | Where used | Used for | Stored in |
 |---|---|---|---|
-| ANTHROPIC_API_KEY | frontend | LangGraph agent reasoning | console.anthropic.com |
-| AGENT_MODEL | frontend | model id (default claude-sonnet-4-6) | optional |
-| DB_HOST / DB_PORT / DB_NAME / DB_USER / DB_PASSWORD | backend | PostGIS connection | your hosted PostGIS / Cloud SQL |
-| MAPILLARY_TOKEN | backend | street-view imagery | mapillary.com/developer |
-| CESIUM_ION_TOKEN | 3D twin build | terrain / imagery (in frontend/digital_twin/.env) | cesium.com/ion |
-| MCP_SERVER_URL | frontend | live backend URL | Cloud Run service URL |
-| TWIN_URL | frontend | live 3D twin URL | twin hosting URL |
-| EXTRA_CORS_ORIGINS | backend | allowed browser origins | frontend + twin URLs |
-| GCP_SA_KEY, GCP_PROJECT_ID | GitHub Actions | CI/CD deploy | GCP service account (delete local key.json after use) |
+| GEMINI_API_KEY | frontend | LangGraph agent (AGENT_PROVIDER=gemini) | Secret Manager `gemini-api-key` |
+| ANTHROPIC_API_KEY | frontend (optional) | Claude instead of Gemini (AGENT_PROVIDER=anthropic) | not deployed |
+| DB_PASSWORD | backend | Neon PostGIS login | Secret Manager `neon-db-password` |
+| DB_HOST / DB_PORT / DB_NAME / DB_USER / PGSSLMODE | backend | Neon connection (plain env vars, pooler host) | Cloud Run env vars |
+| MAPILLARY_TOKEN | backend | street-view imagery | Secret Manager `mapillary-token` |
+| CESIUM_ION_TOKEN, MAPILLARY_TOKEN (VITE_*) | 3D twin build | terrain / imagery (frontend/digital_twin/.env, baked at build) | local .env, gitignored |
+| MCP_SERVER_URL | frontend | live backend URL | Cloud Run env var |
+| TWIN_URL | frontend | live 3D twin URL | Cloud Run env var |
+| EXTRA_CORS_ORIGINS | backend | allowed browser origins (the twin URL) | Cloud Run env var |
+
+## GitHub Actions (Settings > Secrets and variables > Actions)
+
+Keyless login with Workload Identity Federation (service-account keys are blocked by org policy, and not needed).
+
+| Name | Kind | Value |
+|---|---|---|
+| GCP_PROJECT_ID | secret | the Google Cloud project id |
+| GCP_SERVICE_ACCOUNT | secret | `github-actions-deployer@<project>.iam.gserviceaccount.com` |
+| GCP_WIF_PROVIDER | secret | `projects/<number>/locations/global/workloadIdentityPools/github-pool/providers/github-provider` |
+| DEPLOY_ENABLED | variable | leave unset (CI only); `true` makes pushes deploy the frontend |

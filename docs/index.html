@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoSense Agent 2.0 - Live Links</title>
+<meta name="description" content="Ask a plain-English question about a place; an AI agent calls ML, LiDAR and street-view tools and a 3D twin flies to the answer.">
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#17202e;--mute:#5b6678;--line:#dde3ec;--accent:#1a73e8;--accent2:#e8f0fe;--warn:#fff7e0;--warnink:#6b4e00}
+@media (prefers-color-scheme:dark){:root{--bg:#0f141b;--card:#18202b;--ink:#e8edf4;--mute:#9aa7b8;--line:#2a3544;--accent:#7ab0ff;--accent2:#1e2c44;--warn:#2b2410;--warnink:#e9cf85}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line)}
+nav .in{max-width:1000px;margin:0 auto;padding:10px 16px;display:flex;gap:6px 18px;flex-wrap:wrap;align-items:center}
+nav b{margin-right:auto}
+nav a{color:var(--ink);font-size:14px;padding:4px 2px}
+main{max-width:1000px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:clamp(1.8rem,5vw,2.6rem);line-height:1.15;margin:8px 0 10px}
+h2{font-size:1.3rem;margin:42px 0 14px}
+.lead{color:var(--mute);max-width:720px;font-size:1.05rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.card h3{margin:0;font-size:1.05rem}
+.card p{margin:0;color:var(--mute);font-size:.93rem;flex:1}
+.btn{display:inline-block;margin-top:8px;padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-weight:600;font-size:.9rem;align-self:flex-start}
+@media (prefers-color-scheme:dark){.btn{color:#08111f}}
+.btn.alt{background:var(--accent2);color:var(--accent)}
+.btn:hover{text-decoration:none;opacity:.9}
+.note{background:var(--warn);color:var(--warnink);border-radius:10px;padding:12px 16px;font-size:.92rem;margin-top:18px}
+code{background:var(--accent2);padding:1px 6px;border-radius:5px;font-size:.88em}
+ul.q{padding-left:20px;color:var(--mute)}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+td,th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mute);font-weight:600}
+footer{color:var(--mute);font-size:.88rem;margin-top:48px}
+</style>
+</head>
+<body>
+<nav><div class="in">
+<b>GeoSense Agent 2.0</b>
+<a href="#try">Try it</a><a href="#links">Live links</a><a href="#architecture">Architecture</a><a href="#stack">Tech</a><a href="https://github.com/packiarajans/geosense-agent-2">GitHub</a>
+</div></nav>
+<main>
+<h1>Ask a question about a place. Watch the map answer.</h1>
+<p class="lead">GeoSense Agent is an AI agent that calls machine-learning, deep-learning, LiDAR and street-view tools to answer plain-English questions about a location, while a 3D digital twin flies to the result. Built by Packiarajan Siva (M.Tech Geoinformatics, University of Madras).</p>
+
+<section id="try">
+<h2>Try it</h2>
+<div class="grid">
+ <div class="card"><h3>Chat with the agent</h3><p>The main demo: type a question and the agent chooses its tools.</p><a class="btn" href="https://geosense-frontend-179821184586.asia-southeast1.run.app">Open the demo</a></div>
+ <div class="card"><h3>3D digital twin</h3><p>CesiumJS globe with flood zones, LiDAR buildings and Mapillary street view.</p><a class="btn" href="https://geosense-twin-179821184586.asia-southeast1.run.app">Open the twin</a></div>
+ <div class="card"><h3>API playground</h3><p>Call all 7 tools directly from the interactive Swagger page.</p><a class="btn" href="https://geosense-backend-179821184586.asia-southeast1.run.app/docs">Open API docs</a></div>
+</div>
+<div class="note">The site scales to zero to stay free, so the first request after a quiet period can take 10 to 30 seconds. The AI model runs on a free tier, so a burst of questions may briefly be rate-limited. Coverage: Chennai and Manhattan, NYC; land-cover classification covers Velachery only.</div>
+<p><b>Questions to ask:</b></p>
+<ul class="q">
+<li>Is the area at 13.0827, 80.2707 in Chennai prone to flooding?</li>
+<li>What is the walkability around 40.7033, -74.017?</li>
+<li>What is the land cover at Velachery, Chennai?</li>
+</ul>
+</section>
+
+<section id="links">
+<h2>All live links</h2>
+<table>
+<tr><th>What</th><th>Link</th><th>Notes</th></tr>
+<tr><td>Agent demo (Streamlit)</td><td><a href="https://geosense-frontend-179821184586.asia-southeast1.run.app">geosense-frontend</a></td><td>Gemini + LangGraph agent</td></tr>
+<tr><td>3D digital twin</td><td><a href="https://geosense-twin-179821184586.asia-southeast1.run.app">geosense-twin</a></td><td>Also embedded in the demo</td></tr>
+<tr><td>Backend API docs</td><td><a href="https://geosense-backend-179821184586.asia-southeast1.run.app/docs">/docs</a></td><td>FastAPI + MCP, 7 tools</td></tr>
+<tr><td>Backend health check</td><td><a href="https://geosense-backend-179821184586.asia-southeast1.run.app/health">/health</a></td><td>Returns status JSON</td></tr>
+<tr><td>Source code</td><td><a href="https://github.com/packiarajans/geosense-agent-2">GitHub repository</a></td><td>Phases 1 to 5, CI workflow</td></tr>
+<tr><td>CI/CD runs</td><td><a href="https://github.com/packiarajans/geosense-agent-2/actions">GitHub Actions</a></td><td>Compile check + image build</td></tr>
+</table>
+</section>
+
+<section id="architecture">
+<h2>Architecture</h2>
+<p>Cloud deployment (Phase 5): three Cloud Run services in Singapore, a Neon PostGIS database, Gemini for the agent, Mapillary for street imagery.</p>
+<img src="portfolio/geosense_architecture_with_icons.png" alt="GeoSense cloud architecture diagram">
+<h2>How it was built (Phases 1 to 4)</h2>
+<img src="portfolio/geosense_architecture_phases1-4_with_icons.png" alt="GeoSense phases 1 to 4 diagram">
+</section>
+
+<section id="stack">
+<h2>Tech</h2>
+<p>Python, FastAPI, Model Context Protocol, LangGraph, Gemini, Streamlit, PostGIS (Neon), scikit-learn / XGBoost / SHAP, PyTorch U-Net, LiDAR (PDAL, laspy), SegFormer, Mapillary, CesiumJS, Vite, Docker, Google Cloud Run, Cloud Build, Secret Manager, GitHub Actions.</p>
+</section>
+<footer>GeoSense Agent 2.0 &middot; Packiarajan Siva &middot; <a href="https://www.linkedin.com/in/packiarajan-siva">LinkedIn</a></footer>
+</main>
+</body>
+</html>
