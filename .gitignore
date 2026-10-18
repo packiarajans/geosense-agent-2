@@ -10,7 +10,10 @@ outputs/agent_logs/
 
 # --- big data / models / generated outputs (not for GitHub) ---
 data/
-models/
+models/*
+!models/saved/
+models/saved/*
+!models/saved/site_scorer_model.pkl
 outputs/
 Claude outputs/
 Delhi_DEM_Work/
@@ -30,3 +33,16 @@ frontend/digital_twin/.env
 frontend/digital_twin/*.log
 frontend/digital_twin/public/flood_risk.geojson
 docs/*.docx
+
+# --- Phase 5 additions ---
+deploy/key.json
+*.json.key
+*.tfstate
+.streamlit/secrets.toml
+key.json
+
+# --- secrets / local ---
+neon_conn.txt
+.claude/
+todo.md
+implementation_plan.md

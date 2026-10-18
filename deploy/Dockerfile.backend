@@ -1,0 +1,43 @@
+# syntax=docker/dockerfile:1.4
+# Dockerfile.backend
+# Purpose: package the FastAPI + MCP server (src/phase4_agent/mcp_server.py) and the 7 tools.
+# Build from the PROJECT ROOT:  docker build -f deploy/Dockerfile.backend -t geosense-backend .
+FROM python:3.11-slim
+
+ARG INSTALL_ML_EXTRA=false
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    GEOSENSE_BASE=/app \
+    GEOVISION_DATA_DIR=/app/data/geovision \
+    HF_HOME=/opt/hf \
+    HOST=0.0.0.0
+
+# Only the OpenMP runtime (xgboost / torch) and libexpat (rasterio). GDAL, PROJ, GEOS and libpq ship inside the pip wheels
+# (rasterio, pyogrio, shapely, pyproj, psycopg2-binary), so the big apt GDAL stack is not needed.
+RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 libexpat1 && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY deploy/requirements-backend.txt deploy/requirements-ml-extra.txt ./deploy/
+RUN pip install --no-cache-dir -r deploy/requirements-backend.txt && \
+    if [ "$INSTALL_ML_EXTRA" = "true" ]; then pip install --no-cache-dir -r deploy/requirements-ml-extra.txt; fi
+
+# Street-view segmentation weights (~15 MB) are baked in so the cloud container never downloads them at run time.
+RUN if [ "$INSTALL_ML_EXTRA" = "true" ]; then python -c "from transformers import AutoImageProcessor, SegformerForSemanticSegmentation as M; n='nvidia/segformer-b0-finetuned-cityscapes-1024-1024'; AutoImageProcessor.from_pretrained(n); M.from_pretrained(n)"; fi
+
+COPY src/ ./src/
+COPY pipeline/ ./pipeline/
+# Only the small site-scorer model is baked in (the 375 MB SAM checkpoint is excluded by .dockerignore).
+COPY models/saved/site_scorer_model.pkl ./models/saved/site_scorer_model.pkl
+
+# Demo data baked into the image so no storage bucket is needed (see .dockerignore allow-list):
+#   3 classified LiDAR point clouds (~190 MB), the Velachery U-Net weights + Sentinel-2 tile (~100 MB), the labelled-sites CSV.
+COPY data/lidar/processed/ ./data/lidar/processed/
+COPY data/geovision/ ./data/geovision/
+COPY data/processed/labelled_sites.csv ./data/processed/labelled_sites.csv
+RUN mkdir -p /app/data/streetview/images
+
+EXPOSE 8000
+# Shell form so ${PORT} is expanded: Cloud Run injects PORT, local default is 8000.
+CMD uvicorn src.phase4_agent.mcp_server:app --host 0.0.0.0 --port ${PORT:-8000}

@@ -16,3 +16,6 @@ if errorlevel 1 (start "GeoSense Streamlit demo" /min cmd /c F:\GeoSense_Agent\l
 if /I "%~1"=="startup" goto :eof
 timeout /t 20 /nobreak >nul
 start "" http://localhost:8501
+
+echo "Geosense Server Started"
+

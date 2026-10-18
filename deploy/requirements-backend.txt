@@ -1,0 +1,27 @@
+# requirements-backend.txt -- FastAPI + MCP server and the Phase 1/3/4 tools.
+# Versions taken from environment_geosense2.yml where pinned there; the rest are unpinned on purpose.
+# TODO: after the first successful local build, run `pip freeze` inside the container and pin everything.
+fastapi
+uvicorn[standard]
+mcp
+pydantic==2.13.5
+httpx==0.28.1
+requests
+python-dotenv==1.2.3
+sqlalchemy>=2.0,<2.1
+psycopg2-binary
+numpy==2.4.6
+pandas==3.0.6
+scikit-learn==1.9.1
+xgboost-cpu
+joblib==1.6.0
+shap==0.51.0
+geopandas==1.1.4
+shapely==2.1.2
+pyproj==3.7.2
+rasterio==1.4.4
+laspy[lazrs]==2.7.0
+truststore
+# NOT included here (heavy, optional): see requirements-ml-extra.txt
+# NOT included: pdal / python-pdal. Add it (plus apt `pdal libpdal-dev`) ONLY if src/phase3_lidar/lidar_features.py
+# imports it at runtime -- the LiDAR tool path (lidar_analyzer) was not checked for this.

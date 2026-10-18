@@ -1,0 +1,11 @@
+# requirements-frontend.txt -- Streamlit demo app (src/phase4_agent/app.py + geoai_agent.py).
+# NOTE: app.py runs the LangGraph agent in-process, so the FRONTEND container needs ANTHROPIC_API_KEY.
+streamlit
+httpx==0.28.1
+python-dotenv==1.2.3
+pydantic==2.13.5
+langgraph
+langchain-anthropic
+langchain-core
+truststore
+langchain-google-genai

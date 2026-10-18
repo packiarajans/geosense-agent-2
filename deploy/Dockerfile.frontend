@@ -1,0 +1,22 @@
+# Dockerfile.frontend
+# Purpose: package the Streamlit demo app. It runs the LangGraph agent in-process and calls the backend over HTTP.
+# Build from the PROJECT ROOT:  docker build -f deploy/Dockerfile.frontend -t geosense-frontend .
+FROM python:3.11-slim
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+COPY deploy/requirements-frontend.txt ./deploy/
+RUN pip install --no-cache-dir -r deploy/requirements-frontend.txt
+
+# app.py imports geoai_agent from its own folder and geoai_agent resolves ROOT as parents[2] -> /app
+COPY src/__init__.py ./src/__init__.py
+COPY src/phase4_agent/__init__.py ./src/phase4_agent/__init__.py
+COPY src/phase4_agent/app.py ./src/phase4_agent/app.py
+COPY src/phase4_agent/geoai_agent.py ./src/phase4_agent/geoai_agent.py
+
+EXPOSE 8501
+# Env at runtime: ANTHROPIC_API_KEY, MCP_SERVER_URL (backend URL), TWIN_URL (3D twin URL), optional AGENT_MODEL
+CMD streamlit run src/phase4_agent/app.py --server.port=${PORT:-8501} --server.address=0.0.0.0 --server.headless=true

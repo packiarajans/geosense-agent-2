@@ -25,7 +25,20 @@
           }
         ]
       },
-      "name": "00 Health"
+      "name": "00 Health",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });",
+              "pm.test(\"status ok and 7 tools\", function(){ var j=pm.response.json(); pm.expect(j.status).to.eql(\"ok\"); pm.expect(j.tools.length).to.eql(7); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -56,7 +69,19 @@
           "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
         }
       },
-      "name": "01 score_location (Chennai)"
+      "name": "01 score_location (Chennai)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -84,10 +109,23 @@
             }
           },
           "mode": "raw",
-          "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
+          "raw": "{\"latitude\": 12.98, \"longitude\": 80.22}"
         }
       },
-      "name": "02 classify_imagery (placeholder)"
+      "name": "02 classify_imagery (Velachery)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });",
+              "pm.test(\"Velachery returns a dominant_class\", function(){ var s = pm.response.text(); pm.expect(s).to.include(\"dominant_class\"); pm.expect(s).to.not.include(\"out_of_coverage\"); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -118,7 +156,19 @@
           "raw": "{\"min_lat\": 40.775, \"min_lon\": -73.960, \"max_lat\": 40.780, \"max_lon\": -73.953}"
         }
       },
-      "name": "03 lidar_profile (Manhattan UES box)"
+      "name": "03 lidar_profile (Manhattan UES box)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -149,7 +199,19 @@
           "raw": "{\"latitude\": 40.7778, \"longitude\": -73.9565}"
         }
       },
-      "name": "04 streetview_scene (slow on first call)"
+      "name": "04 streetview_scene (slow on first call)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -180,7 +242,19 @@
           "raw": "{\"latitude\": 40.7033, \"longitude\": -74.017}"
         }
       },
-      "name": "05 get_climate_risk (Manhattan)"
+      "name": "05 get_climate_risk (Manhattan)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -211,7 +285,19 @@
           "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
         }
       },
-      "name": "05b get_climate_risk (Chennai)"
+      "name": "05b get_climate_risk (Chennai)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -242,7 +328,19 @@
           "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707}"
         }
       },
-      "name": "06 get_demographics (nearest hospital)"
+      "name": "06 get_demographics (nearest hospital)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -273,7 +371,19 @@
           "raw": "{\"latitude\": 13.0827, \"longitude\": 80.2707, \"top_k\": 5}"
         }
       },
-      "name": "07 find_similar_sites"
+      "name": "07 find_similar_sites",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -304,7 +414,20 @@
           "raw": "{\"latitude\": 51.5074, \"longitude\": -0.1278}"
         }
       },
-      "name": "08 outside coverage (London) - expect error"
+      "name": "08 outside coverage (London) - expect error",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });",
+              "pm.test(\"Honest out-of-coverage message, no crash\", function(){ pm.expect(pm.response.text().toLowerCase()).to.include(\"coverage\"); });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -335,7 +458,19 @@
           "raw": "{\"latitude\": 40.7778, \"longitude\": -73.9565}"
         }
       },
-      "name": "09 move the twin camera"
+      "name": "09 move the twin camera",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     },
     {
       "request": {
@@ -357,7 +492,19 @@
           }
         ]
       },
-      "name": "10 read latest agent location"
+      "name": "10 read latest agent location",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status is 200\", function(){ pm.response.to.have.status(200); });",
+              "pm.test(\"Response is JSON\", function(){ pm.response.to.be.json; });"
+            ]
+          }
+        }
+      ]
     }
   ],
   "info": {

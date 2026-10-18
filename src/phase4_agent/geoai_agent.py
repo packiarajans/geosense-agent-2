@@ -30,7 +30,8 @@ from langgraph.checkpoint.memory import MemorySaver
 
 load_dotenv(ROOT / '.env')
 MCP_SERVER_URL = os.getenv('MCP_SERVER_URL', 'http://localhost:8000')
-MODEL = os.getenv('AGENT_MODEL', 'claude-sonnet-4-6')
+PROVIDER = os.getenv('AGENT_PROVIDER', 'anthropic').strip().lower()   # 'anthropic' (default) or 'gemini'
+MODEL = os.getenv('GEMINI_MODEL', 'gemini-3.5-flash-lite') if PROVIDER == 'gemini' else os.getenv('AGENT_MODEL', 'claude-sonnet-4-6')
 LOG_DIR = ROOT / 'outputs' / 'agent_logs'
 
 TOOL_GUIDE = """
@@ -67,7 +68,13 @@ class AgentState(TypedDict):
 _llm = None
 def get_llm():
     global _llm
-    if _llm is None:
+    if _llm is None and PROVIDER == 'gemini':
+        key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+        if not key:
+            raise SystemExit('GEMINI_API_KEY is not set. Add it to .env (line: GEMINI_API_KEY=...).')
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        _llm = ChatGoogleGenerativeAI(model=MODEL, google_api_key=key, max_output_tokens=1500)
+    elif _llm is None:
         key = os.getenv('ANTHROPIC_API_KEY')
         if not key:
             raise SystemExit('ANTHROPIC_API_KEY is not set. Add it to F:\\GeoSense_Agent\\.env (line: ANTHROPIC_API_KEY=sk-ant-...).')
@@ -100,7 +107,10 @@ def write_with_llm(question, history, results, plan) -> str:
               f"Earlier conversation:\n{_history_text(history)}\n\nQuestion: {question}\n"
               f"Approximate coordinates used: {plan.get('approximate_coordinates')}\n"
               f"Tool results (JSON):\n{json.dumps(results, default=str)[:12000]}")
-    return get_llm().invoke(prompt).content
+    content = get_llm().invoke(prompt).content
+    if isinstance(content, list):   # Gemini returns a list of content blocks; keep only the text
+        content = ''.join(b if isinstance(b, str) else b.get('text', '') for b in content if isinstance(b, (str, dict)))
+    return content
 
 # ------------------------------------------------------------------ graph nodes
 def understand_query(state: AgentState) -> dict:

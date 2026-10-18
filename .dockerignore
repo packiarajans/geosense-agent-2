@@ -1,0 +1,39 @@
+# Keep the build context small and keep secrets out of images
+.git
+.github
+.env
+**/.env
+__pycache__
+**/__pycache__
+*.pyc
+.pytest_cache
+backup
+outputs
+Claude outputs
+**/Claude outputs
+data/*
+!data/geovision
+!data/processed
+data/processed/*
+!data/processed/labelled_sites.csv
+!data/lidar
+data/lidar/*
+!data/lidar/processed
+data/lidar/processed/*
+!data/lidar/processed/manhattan_ues_classified.laz
+!data/lidar/processed/nyc_fidi_classified.laz
+!data/lidar/processed/study_area_classified.laz
+models/saved/sam
+Delhi_DEM_Work
+Mumbai_DEM_Work
+Mumbai_DEM.tif
+OpenPCDet
+notebooks
+frontend/digital_twin/node_modules
+frontend/digital_twin/dist
+docs
+*.tif
+*.laz
+*.las
+*.docx
+*.pptx

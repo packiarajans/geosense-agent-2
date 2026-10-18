@@ -1,0 +1,51 @@
+# deploy.yml -- CI on every push/PR to main; Cloud Run deploy only when you switch it on.
+# To enable deploy: GitHub repo -> Settings -> Secrets and variables -> Actions
+#   Secrets:   GCP_SA_KEY (service-account JSON), GCP_PROJECT_ID
+#   Variables: DEPLOY_ENABLED = true
+name: GeoSense CI-CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      # The existing tests in tests/ call a RUNNING server and local data, so CI does not run them.
+      # Until you add data-free unit tests, CI proves the code compiles and both images build.
+      - name: Byte-compile sources and tests
+        run: python -m compileall -q src tests
+      - name: Build backend image (no push)
+        run: docker build -f deploy/Dockerfile.backend -t geosense-backend:ci .
+      - name: Build frontend image (no push)
+        run: docker build -f deploy/Dockerfile.frontend -t geosense-frontend:ci .
+
+  deploy:
+    needs: checks
+    if: ${{ github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Build and push backend image
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+          IMAGE=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/geosense-repo/backend:${{ github.sha }}
+          docker build -f deploy/Dockerfile.backend -t "$IMAGE" .
+          docker push "$IMAGE"
+      - uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: geosense-backend
+          region: us-central1
+          image: us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/geosense-repo/backend:${{ github.sha }}

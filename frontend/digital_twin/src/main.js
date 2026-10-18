@@ -173,7 +173,7 @@ clickHandler.setInputAction((ev) => {
 let lastStamp = null
 async function pollAgentResult() {
   try {
-    const resp = await fetch('http://localhost:8000/agent/latest_result')
+    const resp = await fetch((import.meta.env.VITE_MCP_URL || 'http://localhost:8000') + '/agent/latest_result')
     const data = await resp.json()
     if (data.latitude != null && data.longitude != null && data.stamp !== lastStamp) {
       {

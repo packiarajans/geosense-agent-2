@@ -1,0 +1,7 @@
+# Optional heavy extras for classify_imagery (U-Net) and streetview_scene (SegFormer).
+# Install with:  docker build --build-arg INSTALL_ML_EXTRA=true ...   (adds roughly 2 GB to the image)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+segmentation-models-pytorch
+transformers
+pillow

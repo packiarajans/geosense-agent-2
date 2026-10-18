@@ -1,0 +1,72 @@
+# docker-compose.yml -- run PostGIS + backend + frontend locally in containers.
+# Run from the project root:
+#   docker compose -f deploy/docker-compose.yml --env-file .env up --build
+# Secrets come from your (git-ignored) .env file -- never write real values in this file.
+# Required in .env: ANTHROPIC_API_KEY, DB_PASSWORD   (optional: AGENT_MODEL, MAPILLARY_TOKEN, TWIN_URL)
+services:
+  db:
+    image: postgis/postgis:18-3.6
+    environment:
+      POSTGRES_DB: geosensedb            # matches db_connection.py default DB_NAME
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    ports:
+      - "5433:5432"                      # 5433 so it does not clash with your local PostgreSQL on 5432
+    volumes:
+      - pgdata:/var/lib/postgresql
+    # NOTE: this DB starts EMPTY. The backend tools need the chennai / manhattan schemas (dem, floodzones, OSM, labelled sites).
+    # Restore them with pg_dump/pg_restore from your local database -- see deploy/README_DEPLOY.md.
+
+  backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+      args:
+        INSTALL_ML_EXTRA: "true"
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: geosensedb
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD}
+      MAPILLARY_TOKEN: ${MAPILLARY_TOKEN:-}
+      EXTRA_CORS_ORIGINS: ${EXTRA_CORS_ORIGINS:-http://localhost:5174,http://localhost:8502}
+      GEOVISION_DATA_DIR: /app/data/geovision
+    ports:
+      - "8010:8000"
+    volumes:
+      - ../data:/app/data:ro             # local run only: LiDAR / imagery / processed files
+      - ../data/streetview:/app/data/streetview   # writable: street-view image cache
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
+    environment:
+      MCP_SERVER_URL: http://backend:8000
+      AGENT_PROVIDER: ${AGENT_PROVIDER:-gemini}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      AGENT_MODEL: ${AGENT_MODEL:-claude-sonnet-4-6}
+      TWIN_URL: ${TWIN_URL:-http://localhost:5174}
+    ports:
+      - "8502:8501"
+    depends_on:
+      - backend
+
+  twin:
+    build:
+      context: ../frontend/digital_twin
+      dockerfile: ../../deploy/Dockerfile.twin
+      args:
+        VITE_CESIUM_ION_TOKEN: ${VITE_CESIUM_ION_TOKEN:-}
+        VITE_MAPILLARY_TOKEN: ${VITE_MAPILLARY_TOKEN:-}
+        VITE_MCP_URL: ${VITE_MCP_URL:-http://localhost:8010}
+    ports:
+      - "5174:8080"
+
+volumes:
+  pgdata:

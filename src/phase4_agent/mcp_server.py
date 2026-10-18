@@ -31,7 +31,7 @@ mcp = MCPServer('geosense', instructions=(
 
 TOOLS = {
     'score_location':    (score_location,    'Score a location for site suitability (ML model + SHAP explanation). Chennai only.'),
-    'classify_imagery':  (classify_imagery,  'Classify satellite land cover at a location. Currently unavailable (no Phase 2 model wired).'),
+    'classify_imagery':  (classify_imagery,  'Classify satellite land cover (Phase 2 U-Net on Sentinel-2) at a location. Velachery, Chennai tile only; returns out_of_coverage elsewhere.'),
     'lidar_profile':     (lidar_profile,     'LiDAR building height, canopy cover and ground slope for a lat/lon bounding box. NYC study area.'),
     'streetview_scene':  (streetview_scene,  'Street-view scene composition and walkability score near a point (Mapillary + segmentation).'),
     'get_climate_risk':  (get_climate_risk,  'Elevation and flood-zone risk class at a point (Chennai, Manhattan). Temperature/drought not available.'),
@@ -71,9 +71,14 @@ class SimilarInput(LocationInput):
 
 from fastapi.middleware.cors import CORSMiddleware
 
+import os
+# Phase 5: extra browser origins for the deployed frontend / 3D twin, e.g.
+#   EXTRA_CORS_ORIGINS=https://geosense-frontend-xxxx-uc.a.run.app,https://your-app.streamlit.app
+_EXTRA_ORIGINS = [o.strip() for o in os.getenv('EXTRA_CORS_ORIGINS', '').split(',') if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8501', 'http://127.0.0.1:8501'],
+    allow_origins=['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:8501', 'http://127.0.0.1:8501'] + _EXTRA_ORIGINS,
     allow_methods=['*'],
     allow_headers=['*'],
 )
@@ -125,7 +130,9 @@ def r_similar(p: SimilarInput): return find_similar_sites(p.latitude, p.longitud
 app.mount('/', mcp.streamable_http_app(streamable_http_path='/mcp'))   # MCP lives at /mcp
 
 if __name__ == '__main__':
+    # Phase 5: local default is unchanged (127.0.0.1:8000). In a container set HOST=0.0.0.0; Cloud Run sets PORT.
+    import os
     import uvicorn
-    uvicorn.run(app, host='127.0.0.1', port=8000)
+    uvicorn.run(app, host=os.getenv('HOST', '127.0.0.1'), port=int(os.getenv('PORT', '8000')))
 
 

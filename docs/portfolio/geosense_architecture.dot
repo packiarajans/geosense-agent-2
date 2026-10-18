@@ -1,0 +1,31 @@
+digraph G {
+  rankdir=LR; fontname="Helvetica"; nodesep=0.45; ranksep=0.8; bgcolor="white";
+  node [shape=box, style="rounded,filled", fontname="Helvetica", fontsize=11, fillcolor="#f4f6fa", color="#4a5568"];
+  edge [fontname="Helvetica", fontsize=9, color="#4a5568"];
+  user [label="User\n(browser)", shape=ellipse, fillcolor="#fff3cd"];
+  gemini [label="Google Gemini API\n(free tier, gemini-3.5-flash-lite)", fillcolor="#e8def8"];
+  mapillary [label="Mapillary API\n(street imagery)", fillcolor="#e8def8"];
+  subgraph cluster_gcp {
+    label="Google Cloud (Cloud Run, asia-southeast1 Singapore, scale-to-zero)"; style="rounded,dashed"; color="#1a73e8"; fontsize=12;
+    fe [label="Frontend\nStreamlit + LangGraph agent\n1Gi / 1 CPU", fillcolor="#d2e3fc"];
+    twin [label="3D Digital Twin\nVite + CesiumJS (nginx)\n512Mi", fillcolor="#d2e3fc"];
+    be [label="Backend\nFastAPI + MCP server (7 tools)\n4Gi / 2 CPU", fillcolor="#d2e3fc"];
+    baked [label="Baked into image\nLiDAR, U-Net, SegFormer,\nsite-scorer model", shape=note, fillcolor="#fef7e0"];
+    sm [label="Secret Manager\nGEMINI_API_KEY, DB password,\nMAPILLARY_TOKEN", shape=cylinder, fillcolor="#fce8e6"];
+    ar [label="Artifact Registry\n(asia-south1)", fillcolor="#e6f4ea"];
+    cb [label="Cloud Build", fillcolor="#e6f4ea"];
+  }
+  neon [label="Neon Postgres + PostGIS\n(Singapore, free tier)\nosm_roads, osm_poi, city schemas", shape=cylinder, fillcolor="#e0f2f1"];
+  gh [label="GitHub\nrepo + Actions CI/CD", fillcolor="#eeeeee"];
+  user -> fe [label="chat"];
+  user -> twin [label="3D view"];
+  fe -> gemini [label="LLM calls"];
+  fe -> be [label="MCP tool calls"];
+  fe -> twin [label="embed", style=dashed];
+  twin -> be [label="REST (CORS)"];
+  be -> neon [label="SQL (SSL, pooler)"];
+  be -> mapillary [label="streetview_scene"];
+  baked -> be [style=dotted, arrowhead=none];
+  sm -> fe [style=dashed, label="secrets"]; sm -> be [style=dashed];
+  gh -> cb [label="build"]; cb -> ar [label="push images"]; ar -> fe [style=dashed, label="deploy"]; ar -> be [style=dashed]; ar -> twin [style=dashed];
+}
