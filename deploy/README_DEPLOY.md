@@ -1,39 +1,54 @@
 # Phase 5 deployment notes (GeoSense Agent 2.0)
 
-Scaffolded 2026-10-14. **Nothing here has been built or run yet** -- Docker was not exercised when these files were written.
+Phase 5 is finished: the three images are built, running on Google Cloud Run (Singapore) and released as v1.0.0.
+Live links: https://packiarajans.github.io/geosense-agent-2/
 
 ## What is in `deploy/`
 | File | Purpose |
 |---|---|
-| `Dockerfile.backend` | FastAPI + MCP server (`src.phase4_agent.mcp_server:app`), honours Cloud Run `PORT` |
-| `Dockerfile.frontend` | Streamlit app (`app.py` + `geoai_agent.py`), honours `PORT` |
-| `docker-compose.yml` | PostGIS + backend + frontend for local testing |
-| `requirements-backend.txt` / `-frontend.txt` / `-ml-extra.txt` | Split dependency lists (instead of one `pip freeze`) |
+| `Dockerfile.backend` | FastAPI + MCP server (`src.phase4_agent.mcp_server:app`) with the 7 tools; honours Cloud Run `PORT`; bakes in the demo data (LiDAR, U-Net, labelled sites) |
+| `Dockerfile.frontend` | Streamlit app (`app.py` + `geoai_agent.py`); runs the LangGraph agent in-process; honours `PORT` |
+| `Dockerfile.twin` | Builds the Vite/CesiumJS 3D twin and serves it with nginx; honours `PORT` |
+| `docker-compose.yml` | Local stack: PostGIS + backend + frontend + twin |
+| `start.ps1` / `stop.ps1` | Start and stop the local stack (they read `..\.env` and `..\frontend\digital_twin\.env`) |
+| `requirements-backend.txt` / `-frontend.txt` / `-ml-extra.txt` | Split dependency lists |
+| `deploy.fixed.yml`, `github-workflow-deploy.yml` | Copies of the CI workflow used while editing; the live one is `.github/workflows/deploy.yml` |
 
 ## Run locally in containers
-From `F:\GeoSense_Agent` (Docker Desktop running; `.env` must contain `ANTHROPIC_API_KEY` and `DB_PASSWORD`):
+Docker Desktop must be running. From `F:\GeoSense_Agent\deploy`:
 
-    docker compose -f deploy/docker-compose.yml --env-file .env up --build
+    .\start.ps1      # frontend :8502, backend :8010/docs, twin :5174, database :5433
+    .\stop.ps1       # stops the containers, keeps the database volume
 
-Then open http://localhost:8000/docs and http://localhost:8501.
+Keys live in the git-ignored `.env` files; never write real values in committed files.
 
-## Gaps the manual does not cover (decide before Week 2)
-1. **Database.** The app reads PostGIS schemas `chennai` and `newyork`/Manhattan (DEM, flood zones, OSM, labelled sites). The compose DB starts empty. Restore your local DB into it with `pg_dump` / `pg_restore`; for the cloud you need a hosted PostGIS (e.g. Cloud SQL) loaded the same way.
-2. **`data/` is git-ignored and not in the image.** LiDAR `.laz`, the Velachery Sentinel-2 tile and processed CSVs live only on your drive. Locally compose mounts `../data`. In the cloud, either upload the needed files to a bucket and read from there, or deploy a reduced demo where those tools return their honest "no data" error.
-3. **3D digital twin** (`frontend/digital_twin`, Vite on port 5173) is a separate app that Streamlit embeds via `TWIN_URL`. It needs its own hosting (static build on Cloud Run/nginx, Netlify, etc.), and its URL must be added to `EXTRA_CORS_ORIGINS` on the backend. Not scaffolded yet.
-4. **Agent runs inside the frontend container**, so `ANTHROPIC_API_KEY` goes on the frontend service, not (only) the backend as in the manual.
-5. **Models.** Only `models/saved/site_scorer_model.pkl` (~0.7 MB) is baked in; `.gitignore` was adjusted to allow committing it. The SAM checkpoint (375 MB) is excluded. U-Net weights for `classify_imagery` were not located -- check where they load from.
-6. **Heavy ML extras** (torch, segmentation-models-pytorch, transformers) are optional via `--build-arg INSTALL_ML_EXTRA=true`; expect a ~2 GB larger image and more Cloud Run memory than 2Gi.
-7. **PDAL** is intentionally not installed; add it only if the LiDAR path imports it.
+## Cloud deployment (Google Cloud Run, asia-southeast1)
+| Service | Memory / CPU | Min / Max instances | Notes |
+|---|---|---|---|
+| geosense-backend | 4 Gi / 2 CPU | 0 / 3 | concurrency 4; reads Neon and Secret Manager |
+| geosense-frontend | 1 Gi / 1 CPU | 0 / 2 | concurrency 10; session affinity |
+| geosense-twin | 512 Mi | 0 / 2 | static page behind nginx |
 
-## Cloud Run (Week 2) -- do not run until billing is enabled and you have agreed
-Set secrets with Secret Manager rather than `--set-env-vars`. Env needed:
-backend: `DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD, MAPILLARY_TOKEN, EXTRA_CORS_ORIGINS`
-frontend: `ANTHROPIC_API_KEY, MCP_SERVER_URL, TWIN_URL, AGENT_MODEL`
+- Images are stored in Artifact Registry `geosense-repo` (asia-south1).
+- The backend image is built and pushed from the laptop because it copies `data/`, which is not in git. The frontend and twin images are built with Cloud Build.
+- Database: Neon free PostgreSQL with PostGIS (Singapore), trimmed data. Cloud Run uses the pooler host and `PGSSLMODE=require`.
+- Secrets in Secret Manager: `neon-db-password`, `mapillary-token`, `gemini-api-key`.
+- Environment: `DB_*`, `AGENT_PROVIDER=gemini`, `GEMINI_MODEL=gemini-3.5-flash-lite`, `MCP_SERVER_URL`, `TWIN_URL`, `EXTRA_CORS_ORIGINS`.
+- The agent runs inside the frontend container, so the Gemini key is attached to the frontend service.
+- Services scale to zero, so the first request after idle takes 10 to 30 seconds.
 
 ## CI (`.github/workflows/deploy.yml`)
-CI compiles the code and builds both images on every push/PR. The Cloud Run deploy job stays off until the repo variable `DEPLOY_ENABLED=true` and secrets `GCP_SA_KEY`, `GCP_PROJECT_ID` exist. The existing pytest suite needs a live server and local data, so it is not run in CI.
+- Every push or pull request to `main`: byte-compile `src` and `tests`, then build the frontend image (no push). The backend image is not built in CI because it needs `data/`.
+- Deploy job (builds and deploys the frontend to Cloud Run) is off until the repository variable `DEPLOY_ENABLED` is set to `true`.
+- Sign-in uses Workload Identity Federation (pool `github-pool`, provider `github-provider`, service account `github-actions-deployer`); no key file is used. Repository secrets: `GCP_PROJECT_ID`, `GCP_SERVICE_ACCOUNT`, `GCP_WIF_PROVIDER`.
+- The pytest suite needs a live server and local data, so it is not run in CI.
+
+## Load test
+`tests/test_load.py` sends 20 rounds of `/health` plus `get_climate_risk`. Set `BACKEND_URL` first. Last cloud result: 0 errors, average 0.31 s, p95 0.35 s (local average 0.11 s).
+
+## Known limits
+Cold starts; `classify_imagery` covers Velachery only; flood classes are elevation-based estimates; temperature and drought are not integrated; Gemini free-tier rate limits; walkability varies with the street images Mapillary returns.
 
 ## Changes made to existing files (originals in `backup/`)
-- `src/phase4_agent/mcp_server.py`: CORS origins extendable via `EXTRA_CORS_ORIGINS`; `HOST`/`PORT` env for the `__main__` block (local default unchanged: 127.0.0.1:8000).
-- `.gitignore`: `models/` -> allow `models/saved/site_scorer_model.pkl`; added key/secret patterns.
+- `src/phase4_agent/mcp_server.py`: CORS origins extendable via `EXTRA_CORS_ORIGINS`; `HOST`/`PORT` environment variables for the `__main__` block.
+- `.gitignore`: allow `models/saved/site_scorer_model.pkl`; key and secret patterns; `neon_conn.txt`.
