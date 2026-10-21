@@ -50,9 +50,21 @@ CesiumJS twin (5173) <------------- flies the camera and opens street view -----
 - **3D Digital Twin.** Real-world terrain, colour-coded flood-risk zones, about 2,000 LiDAR-derived 3D buildings in Manhattan, a site switcher, and clickable live Mapillary street view. The camera flies to whatever location the agent returns.
 - **One-click demo.** `start_all.bat` starts the server, twin and Streamlit page; `stop_all.bat` stops them.
 
-<!-- Screenshot of the 3D twin: add docs/images/digital_twin.png and uncomment the next line
-![GeoSense 3D Digital Twin](docs/images/digital_twin.png)
--->
+### Screenshots (live deployment)
+
+| Agent answers a flood-risk question | Agent answers a land-cover question |
+|---|---|
+| ![Agent flood risk](docs/images/agent_flood_risk.png) | ![Agent land cover](docs/images/agent_land_cover.png) |
+
+![GeoSense 3D Digital Twin with flood-risk zones and street view](docs/images/digital_twin.png)
+
+| LiDAR building profile (API) | Street-view scene (API) |
+|---|---|
+| ![lidar_profile](docs/images/api_lidar_profile.png) | ![streetview_scene](docs/images/api_streetview_scene.png) |
+
+| Out-of-coverage handled honestly | Backend health: 7 tools |
+|---|---|
+| ![out of coverage](docs/images/api_out_of_coverage.png) | ![health](docs/images/api_health.png) |
 
 ### Quick start (Windows)
 
